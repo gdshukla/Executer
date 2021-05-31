@@ -58,11 +58,16 @@ Below last `else if` block, add code to load and initialize command task
 
 ## Commands available
 - help or h: Display help text
+![help example](/images/help.png)
+
 - stats or s: display overall task stats
+![stats example](/images/stats.png)
+
 - load or l: load new json file to add tasks to run
 ```
 >>>load commands.json
 ```
+![load example](/images/load.png)
 - display or d: display stats about a certain task
 ```
 >>>d 1
@@ -71,6 +76,7 @@ Result: 3628800
 Started at: 00:02:08.466
 Started at: 00:02:09.371
 ```
+![display example](/images/display.png)
 - quit or q: quit the program
 
 # How to run the program
@@ -78,6 +84,7 @@ Run executer.exe from terminal. Additionally json file containing command detail
 ```
 >executer commands.json
 ```
+![initial screen example](/images/initial_screen.png)
 Once program starts, it displays a `>>>` prompt to run in-program commands
 
 # Class details:

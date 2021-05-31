@@ -32,7 +32,7 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
     if (ifs.good())
     {
         json jf = json::parse(ifs);
-        //std::cout << jf["commands"].size() << "\n";
+        std::cout << "Loaded " << jf["commands"].size() << " commands\n";
         for (auto& c : jf["commands"]) 
         {
             std::unique_ptr<ICommand> cmd;
@@ -71,6 +71,8 @@ std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<IComman
         Stats::instance()->added();
         tasks.push_back(make_task(func));
     }
+
+    std::cout << "Added " << tasks.size() << " tasks to task queue\n";
     return tasks;
 }
 
@@ -88,7 +90,24 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
 
         if (input == "help" || input == "h")
         {
-            // print help
+            std::string helpText =
+                "--------------------------------------------------------\n"
+                "Executer help\n"
+                "To execute program run\n"
+                ">Executer command.json\n"
+                "on terminal\n"
+                "In-program commands\n"
+                "- help or h: display help text\n"
+                "= stats or s: display overall task statistics\n"
+                "- load or l: load new json file to add tasks to run\n"
+                ">>>load commands.json\n"
+                "- display or d: display stats about a certain task\n"
+                "for example to display stats of task 1\n"
+                ">>>d 1\n"
+                "- quit or q: quit the program\n"
+                "--------------------------------------------------------\n\n";
+                // print help
+            std::cout << helpText;
         }
         else if (input == "stats" || input == "s")
         {
@@ -111,7 +130,7 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
             {
                 tasks.push_back(c);
             }
-            std::cout << "loaded " << cmdTasks.size() << " tasks\n";
+            //std::cout << "loaded " << cmdTasks.size() << " tasks\n";
         }
         else if (input.starts_with("display ") || input.starts_with("d "))
         {
