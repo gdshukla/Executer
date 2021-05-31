@@ -24,6 +24,7 @@ my_task(): ICommand("my_task"), ... {}
 
 ### JSON Argument parser
 It must implement `parseArgs` member to parse arguments from `commands.json` file and to initialize class member variables.
+
 *TODO:: Add error checking in case invalid arguments are supplied*
 ```
 bool parseArgs(nlohmann::json& j) {
@@ -35,6 +36,7 @@ bool parseArgs(nlohmann::json& j) {
 ### Command worker
 It must implement `operator()()` function which contains the actual command implementation. Currently its return type is limited to integer only.
 Before returning save result to `Task::m_result` member.
+
 *TODO: Add support for generic return types*
 ```
 int operator()() {
