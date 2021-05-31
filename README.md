@@ -1,7 +1,7 @@
 # Executer
 A simple task executer. Task commands can be specified in a json file and given as input to the program.
 
-Task Scheduler runs a threadpool of threads equal to number of cores available on system. Thread count is equal to std::thread::hardware_concurrency() value of the system. When a task is added scheduler automatically starts it immediately. If there are more taks than number of cores, shceduler waits for a task to finish before starting a new task. 
+Task Scheduler runs a threadpool of threads equal to number of cores available on system. Thread count is equal to `std::thread::hardware_concurrency()` value of the system. When a task is added scheduler automatically starts it immediately. If there are more taks than number of cores, shceduler waits for a task to finish before starting a new task. 
 
 Threads are created only once during startup and same threads are resued to launch different tasks.
 
@@ -73,6 +73,13 @@ Started at: 00:02:09.371
 ```
 - quit or q: quit the program
 
+# How to run the program
+Run executer.exe from terminal. Additionally json file containing command details can be passed as argument
+```
+>executer commands.json
+```
+Once program starts, it displays a `>>>` prompt to run in-program commands
+
 # Class details:
 ## Queue (queue.hpp)
 Implements a mutex protected queue. This is used to hold the tasks
@@ -94,3 +101,8 @@ Task inherits from basic_task and implements functionality to setup `std::functi
 ## utilities.hpp
 - print: Mutex protected print function to display strings on console
 - toTime: Converts system_clock::time_point to hh:mm:ss.mmm format
+
+## commands.h
+Implements 2 simple example commands - adder and factorial
+- adder: adds numbers starting deom M-start till m_end. To simulate long running command, it add m_delay milliseconds delay between each iteration.
+- factorial: calculates factorial of m_num number. To simulate long running command, it add m_delay milliseconds delay between each iteration.
