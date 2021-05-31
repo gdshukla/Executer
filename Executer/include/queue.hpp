@@ -5,6 +5,7 @@
 #include <condition_variable>
 
 // thread safe queue
+class ITask;
 
 template <class T>
 class Queue 

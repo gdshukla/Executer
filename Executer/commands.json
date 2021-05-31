@@ -1,7 +1,38 @@
 {
   "commands": [
-    "command1",
-    "command2",
-    "command3"
+    {
+      "name": "command1",
+      "start": 5,
+      "end": 20,
+      "delay": 100
+    },
+    {
+      "name": "command2",
+      "num": 10,
+      "delay": 100
+    },
+    {
+      "name": "command1",
+      "start": 5,
+      "end": 10,
+      "delay": 100
+    },
+    {
+      "name": "command2",
+      "num": 8,
+      "delay": 100
+    },
+    {
+      "name": "command1",
+      "start": 5,
+      "end": 20,
+      "delay": 100
+    },
+    {
+      "name": "command2",
+      "num": 14,
+      "delay": 100
+    }
   ]
+
 }
