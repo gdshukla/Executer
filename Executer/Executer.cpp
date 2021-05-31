@@ -20,77 +20,39 @@
 #include "utilities.hpp"
 
 std::unique_ptr<stats> stats::m_instance;
-// read data from json file
-std::map<std::string, nlohmann::json> getCommandsFromFile(std::string filename)
-{
-    using json = nlohmann::json;
-    std::map<std::string, nlohmann::json> cmds;
-    std::ifstream ifs(filename);
-    if (ifs.good())
-    {
-        json jf = json::parse(ifs);
-        std::cout << jf["commands"].size() << "\n";
-        for (auto& c : jf["commands"]) {
-            std::cout << c["name"] << "\n";
-            cmds[c["name"]] = c;
-        }
-    }
-    return cmds;
-}
 
-std::vector<std::unique_ptr<ICommand>> loadCommandArguments(std::string filename)
+// read data from json file
+std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
 {
     std::vector<std::unique_ptr<ICommand>> cmdTasks;
 
     using json = nlohmann::json;
-    //std::map<std::string, nlohmann::json> commands = getCommandsFromFile(filename);
     using json = nlohmann::json;
     std::map<std::string, nlohmann::json> cmds;
     std::ifstream ifs(filename);
     if (ifs.good())
     {
         json jf = json::parse(ifs);
-        std::cout << jf["commands"].size() << "\n";
+        //std::cout << jf["commands"].size() << "\n";
         for (auto& c : jf["commands"]) 
         {
             std::unique_ptr<ICommand> cmd;
             std::string name = c["name"];
-            std::cout << name << "\n";
+            //std::cout << name << "\n";
             cmds[name] = c;
-            if (name == "command1")
+            if (name == "adder")
             {
-                 cmd = std::make_unique<command1>();
+                 cmd = std::make_unique<adder>();
             }
-            else if (name == "command2")
+            else if (name == "factorial")
             {
-                cmd = std::make_unique<command2>();
+                cmd = std::make_unique<factorial>();
             }
             cmd->parseArgs(c);
             cmdTasks.push_back(std::move(cmd));
         }
     }
 
-    //for (auto& cmd : commands)
-    //{
-    //    if (cmd.first == "command1")
-    //    {
-    //        cmdTasks.push_back(std::make_unique<command1>());
-    //    }
-    //    else if (cmd.first == "command2")
-    //    {
-    //        cmdTasks.push_back(std::make_unique<command2>());
-    //    }
-
-
-    //}
-    //for (auto& c : cmdTasks)
-    //{
-    //    if (commands.count(c->getName()) > 0)
-    //    {
-    //        c->parseArgs(commands.at(c->getName()));
-    //    }
-
-    //}
     return cmdTasks;
 }
 
@@ -101,7 +63,7 @@ std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<IComman
     {
         auto func = [&c] {
             int result = c->operator()();
-            print(c->getName() + "\n");
+            //print(c->getName() + "\n");
             return result;
         };
             //c.
@@ -110,63 +72,97 @@ std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<IComman
     return tasks;
 }
 
+void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
+{
+    std::vector<std::unique_ptr<ICommand>> cmdTasks;
+    while (1)
+    {
+        std::cout << ">>>";
+        std::fflush(stdout);
+        const size_t size = 256;
+        char buf[size];
+        std::cin.getline(buf, size);
+        std::string input(buf);
+
+        if (input == "help" || input == "h")
+        {
+            // print help
+        }
+        else if (input == "stats" || input == "s")
+        {
+            stats::instance()->display();
+        }
+        else if (input.starts_with("load ") || input.starts_with("l "))
+        {
+            std::string filename;
+            if (input.starts_with("load "))
+            {
+                filename = input.substr(5);
+            }
+            else
+            {
+                filename = input.substr(2);
+            }
+            cmdTasks = loadCommands(filename);
+            std::vector<std::shared_ptr<Task>> t = makeTasks(cmdTasks);
+            for (auto& c : t)
+            {
+                tasks.push_back(c);
+            }
+            std::cout << "loaded " << cmdTasks.size() << " tasks\n";
+        }
+        else if (input.starts_with("display ") || input.starts_with("d "))
+        {
+            int tasknum = -1;
+            if (input.starts_with("display "))
+            {
+                tasknum = std::stoi(input.substr(8));
+            }
+            else
+            {
+                tasknum = std::stoi(input.substr(2));
+            }
+            if (tasknum < tasks.size())
+            {
+                std::cout << "Status: " << tasks[tasknum]->status() << "\n";
+                std::cout << "Result: " << tasks[tasknum]->m_result << "\n";
+                std::cout << "Started at: " << toTime(tasks[tasknum]->start) << "\n";
+                if (tasks[tasknum]->status())
+                {
+                    std::cout << "Started at: " << toTime(tasks[tasknum]->end) << "\n";
+                }
+            }
+            else
+            {
+                std::cout << "Invalid task number: " << tasknum << "\n";
+                std::cout << "Valid values are: 0 to " << tasks.size() - 1 << "\n";
+            }
+        }
+        else if (input == "quit" || input == "q")
+        {
+            break;
+        }
+
+    }
+}
+
 int main(int argc, char* argv[])
 {
     if (argc < 1) {
         std::cout << "Please specify input json file name";
     }
 
-    std::vector<std::unique_ptr<ICommand>> cmdTasks = loadCommandArguments(argv[1]);
-
+    std::vector<std::unique_ptr<ICommand>> cmdTasks = loadCommands(argv[1]);
 
     Scheduler::init();
-    auto getInt = [] {
-        for(int i = 0; i < 5; i++){
-            print(". ");
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        }
-        return 10;
-    };
+
     std::vector<std::shared_ptr<Task>> tasks = makeTasks(cmdTasks);
-    //for (int i = 0; i < 6; i++)
-    //{
-    //    tasks.push_back(make_task(getInt));
-    //}
-    //auto getIntTask1 = make_task(getInt);
-    //auto getIntTask2 = make_task(getInt);
-    //auto getIntTask3 = make_task(getInt);
-    //auto getIntTask4 = make_task(getInt);
-    //auto getIntTask5 = make_task(getInt);
-    //auto getIntTask6 = make_task(getInt);
-    size_t tasksCount = tasks.size();
-    while (tasksCount > 0)
-    {
-        stats::instance()->wait();
-        stats::instance()->display();
-        for (auto& t : tasks)
-        {
-            if (t->status())
-            {
-                tasksCount--;
-                int res = t->result();
-                std::cout << "result: " << res << "\n";
-                std::cout << "start: " << toTime(t->start) << "\n";
-                std::cout << "end  : " << toTime(t->end) << "\n";
-            }
-        }
-    }
-    //res = getIntTask2->result();
-    //std::cout << "result: " << res << "\n";
-    //res = getIntTask3->result();
-    //std::cout << "result: " << res << "\n";
-    //res = getIntTask4->result();
-    //std::cout << "result: " << res << "\n";
-    //res = getIntTask5->result();
-    //std::cout << "result: " << res << "\n";
-    //res = getIntTask6->result();
-    //std::cout << "result: " << res << "\n";
+
+    processCommands(tasks);
+
+
 
     Scheduler::shutdown();
-    std::cout << "Hello World!\n";
+
 }
 

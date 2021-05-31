@@ -21,14 +21,14 @@ void Scheduler::shutdown() {
     }
 }
 
-void Scheduler::schedule(std::shared_ptr<ITask> task) {
+void Scheduler::schedule(std::shared_ptr<Task> task) {
     m_queue.push(task);
 }
 
 Scheduler::Scheduler() {
     auto func = [&] {
         while(1) {
-            std::shared_ptr<ITask> task;
+            std::shared_ptr<Task> task;
             m_queue.pop(task);
             if (!task)
                 return;

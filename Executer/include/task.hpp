@@ -55,6 +55,7 @@ public:
         for (auto& action : m_actions) {
             result = action();
         }
+        m_actions.pop_back();
         stats::instance()->completed();
         end = std::chrono::system_clock::now();
         return result;
@@ -66,11 +67,12 @@ class Task : public basic_task
 {
 protected:
     std::promise<int> m_promise;
-    int m_result;
     F m_func;
 public:
-    Task() : basic_task(), m_result{ 0 } {}
-    Task(F func) : basic_task(), m_result{ 0 }, m_func(func)
+    int m_result;
+    bool m_checked;
+    Task() : basic_task(), m_result{ 0 }, m_checked{ false }{}
+    Task(F func) : basic_task(), m_result{ 0 }, m_func(func), m_checked{ false }
     {
         basic_task::m_future = m_promise.get_future();
         basic_task::addAction(m_func);  
@@ -81,7 +83,8 @@ public:
     }
     virtual int operator()() override
     {
-        m_promise.set_value(basic_task::schedule());
+        m_result = basic_task::schedule();
+        m_promise.set_value(m_result);
         return m_result;
     }
 

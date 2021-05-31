@@ -1,37 +1,37 @@
 {
   "commands": [
     {
-      "name": "command1",
-      "start": 5,
+      "name": "adder",
+      "start": 1,
       "end": 20,
       "delay": 100
     },
     {
-      "name": "command2",
+      "name": "factorial",
       "num": 10,
       "delay": 100
     },
     {
-      "name": "command1",
-      "start": 5,
+      "name": "adder",
+      "start": 1,
       "end": 10,
-      "delay": 100
+      "delay": 500
     },
     {
-      "name": "command2",
+      "name": "factorial",
       "num": 8,
       "delay": 100
     },
     {
-      "name": "command1",
-      "start": 5,
-      "end": 20,
+      "name": "adder",
+      "start": 1,
+      "end": 15,
       "delay": 100
     },
     {
-      "name": "command2",
-      "num": 14,
-      "delay": 100
+      "name": "factorial",
+      "num": 12,
+      "delay": 500
     }
   ]
 

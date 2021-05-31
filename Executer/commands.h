@@ -16,15 +16,15 @@ public:
 };
 
 
-class command1: public ICommand
+class adder: public ICommand
 {
     int m_start;
     int m_end;
     int m_delay;
 public:
-    command1() :ICommand("command1"), m_start(0), m_end{ 0 }, m_delay(0)
+    adder() :ICommand("adder"), m_start(0), m_end{ 0 }, m_delay(0)
     {}
-    ~command1() = default;
+    ~adder() = default;
     /*virtual*/ bool parseArgs(nlohmann::json& j) override
     {
         m_start = j.contains("start") ? j["start"].get<int>() : 0;
@@ -36,23 +36,24 @@ public:
     // increment m_start by 1 and use m_delay between each iteration
     int operator()() override
     {
-        int i = 0;
-        for (i = m_start; i < m_end; i++)
+        int sum = 0;
+        for (int i = m_start; i < m_end; i++)
         {
+            sum += i;
             //print(". ");
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
         }
-        Task::m_result = m_end;
+        Task::m_result = sum;
         return m_result;
     }
 
 };
 
-class command2 : public ICommand
+class factorial : public ICommand
 {
     int m_num;
     int m_delay;
-    int factorial(int num)
+    int fact(int num)
     {
         if (num <= 1)
         {
@@ -60,12 +61,12 @@ class command2 : public ICommand
         }
         //print("~ ");
         std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
-        return num * factorial(num - 1);
+        return num * fact(num - 1);
     }
 public:
-    command2() :ICommand("command2"), m_num{ 0 }, m_delay{ 0 }
+    factorial() :ICommand("factorial"), m_num{ 0 }, m_delay{ 0 }
     {}
-    ~command2() override = default;
+    ~factorial() override = default;
     /*virtual*/ bool parseArgs(nlohmann::json& j) override
     {
         m_num = j.contains("num") ? j["num"].get<int>() : 0;
@@ -74,7 +75,7 @@ public:
     }
     int operator()() override
     {
-        m_result = factorial(m_num);
+        m_result = fact(m_num);
         return m_result;
     }
     int result() override
