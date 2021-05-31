@@ -1,6 +1,10 @@
 # Executer
 A simple task executer. Task commands can be specified in a json file and given as input to the program.
 
+Task Scheduler runs a threadpool of threads equal to number of cores available on system. Thread count is equal to std::thread::hardware_concurrency() value of the system. When a task is added scheduler automatically starts it immediately. If there are more taks than number of cores, shceduler waits for a task to finish before starting a new task. 
+
+Threads are created only once during startup and same threads are resued to launch different tasks.
+
 # Creating a new command task
 Command task class must be inherited from ICommand interface.
 ```
@@ -68,3 +72,25 @@ Started at: 00:02:08.466
 Started at: 00:02:09.371
 ```
 - quit or q: quit the program
+
+# Class details:
+## Queue (queue.hpp)
+Implements a mutex protected queue. This is used to hold the tasks
+
+## Stats (stats.hpp)
+Contains overall task statistics. It is implemented as a singleton.
+
+## IArguments (arguments.h)
+Json argument interface. It is an abstract class
+
+## Scheduler (scheduler.cpp/hpp)
+Scheduler implemented as singleton. It implements a threadpool of 4 threads. 
+
+## ITask/basic_tasl/Task (task.hpp)
+ITask is task interface.
+basic_task inherits from ITask and implements some basic task functionality
+Task inherits from basic_task and implements functionality to setup `std::function<int(void)>` as worker task
+
+## utilities.hpp
+- print: Mutex protected print function to display strings on console
+- toTime: Converts system_clock::time_point to hh:mm:ss.mmm format

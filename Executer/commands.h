@@ -43,8 +43,8 @@ public:
             //print(". ");
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
         }
-        Task::m_result = sum;
-        return m_result;
+
+        return sum;
     }
 
 };
@@ -75,12 +75,7 @@ public:
     }
     int operator()() override
     {
-        m_result = fact(m_num);
-        return m_result;
-    }
-    int result() override
-    {
-        return m_result;
+        return fact(m_num);
     }
 
 };

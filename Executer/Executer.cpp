@@ -19,14 +19,13 @@
 #include "commands.h"
 #include "utilities.hpp"
 
-std::unique_ptr<stats> stats::m_instance;
+std::unique_ptr<Stats> Stats::m_instance;
 
 // read data from json file
 std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
 {
     std::vector<std::unique_ptr<ICommand>> cmdTasks;
 
-    using json = nlohmann::json;
     using json = nlohmann::json;
     std::map<std::string, nlohmann::json> cmds;
     std::ifstream ifs(filename);
@@ -40,6 +39,8 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
             std::string name = c["name"];
             //std::cout << name << "\n";
             cmds[name] = c;
+            // ----------------------------------------------------------------
+            // load command tasks and initialize them
             if (name == "adder")
             {
                  cmd = std::make_unique<adder>();
@@ -48,7 +49,8 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
             {
                 cmd = std::make_unique<factorial>();
             }
-            cmd->parseArgs(c);
+            // ----------------------------------------------------------------
+            cmd->parseArgs(c);  // initialize object members
             cmdTasks.push_back(std::move(cmd));
         }
     }
@@ -66,7 +68,7 @@ std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<IComman
             //print(c->getName() + "\n");
             return result;
         };
-            //c.
+        Stats::instance()->added();
         tasks.push_back(make_task(func));
     }
     return tasks;
@@ -90,7 +92,7 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
         }
         else if (input == "stats" || input == "s")
         {
-            stats::instance()->display();
+            Stats::instance()->display();
         }
         else if (input.starts_with("load ") || input.starts_with("l "))
         {

@@ -29,11 +29,13 @@ protected:
     bool m_scheduled = false;
 
 public:
-    virtual int result() {
+    virtual int result() 
+    {
         return m_future.get();
     }
 
-    void addAction(std::function<int()> action) {
+    void addAction(std::function<int()> action) 
+    {
         auto lock = std::lock_guard(m_mutex);
         if (m_scheduled) 
         {
@@ -44,19 +46,21 @@ public:
             m_actions.push_back(action);
         }
     }
-    int schedule() {
+    int schedule() 
+    {
         {
             auto lock = std::lock_guard(m_mutex);
             m_scheduled = true;
         }
         start = std::chrono::system_clock::now();
-        stats::instance()->started();
+        Stats::instance()->started();
         int result = 0;
-        for (auto& action : m_actions) {
+        for (auto& action : m_actions) 
+        {
             result = action();
         }
         m_actions.pop_back();
-        stats::instance()->completed();
+        Stats::instance()->completed();
         end = std::chrono::system_clock::now();
         return result;
     }

@@ -10,7 +10,8 @@ public:
 
     //virtual bool operator()(nlohmann::json& j) = 0;
     virtual bool parseArgs(nlohmann::json& j) = 0;
-    virtual std::string getName() {
+    virtual std::string getName() 
+    {
         return m_name;
     }
     virtual ~IArguments() = default;
