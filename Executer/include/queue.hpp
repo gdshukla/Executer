@@ -17,14 +17,14 @@ class Queue
 public:
     void push(T value) 
     {
-        auto lock = std::unique_lock(m_mutex);
+        auto lock = std::unique_lock<std::mutex>(m_mutex);
         m_queue.push(value);
         m_cv.notify_one();
     }
 
     void pop(T& value) 
     {
-        auto lock = std::unique_lock(m_mutex);
+        auto lock = std::unique_lock<std::mutex>(m_mutex);
         m_cv.wait(lock, [this] { return !m_queue.empty(); });
         value = m_queue.front();
         m_queue.pop();

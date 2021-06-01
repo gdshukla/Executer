@@ -2,12 +2,14 @@
 #include <mutex>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <chrono>
+#include <iomanip>
 
 static std::mutex m_mutex;
 static inline void print(std::string str)
 {
-    auto lock = std::lock_guard(m_mutex);
+    auto lock = std::lock_guard<std::mutex>(m_mutex);
     std::cout << str;
 }
 

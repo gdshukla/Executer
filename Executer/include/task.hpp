@@ -36,7 +36,7 @@ public:
 
     void addAction(std::function<int()> action) 
     {
-        auto lock = std::lock_guard(m_mutex);
+        auto lock = std::lock_guard<std::mutex>(m_mutex);
         if (m_scheduled) 
         {
             action();
@@ -49,7 +49,7 @@ public:
     int schedule() 
     {
         {
-            auto lock = std::lock_guard(m_mutex);
+            auto lock = std::lock_guard<std::mutex>(m_mutex);
             m_scheduled = true;
         }
         start = std::chrono::system_clock::now();

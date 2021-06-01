@@ -25,7 +25,7 @@ public:
     }
     void wait() 
     {
-        auto lock = std::unique_lock(m_mutex);
+        auto lock = std::unique_lock<std::mutex>(m_mutex);
         m_cv.wait(lock, [this] { return m_ready; });
         m_ready = false;
     }
@@ -40,7 +40,7 @@ public:
     void completed() 
     { 
         m_completed++; m_running--;
-        auto lock = std::unique_lock(m_mutex);
+        auto lock = std::unique_lock<std::mutex>(m_mutex);
         m_ready = true;
         m_cv.notify_one();
     }

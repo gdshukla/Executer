@@ -54,6 +54,10 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
             cmdTasks.push_back(std::move(cmd));
         }
     }
+    else
+    {
+        std::cout << filename << " file not found\n";
+    }
 
     return cmdTasks;
 }
@@ -134,7 +138,7 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
         }
         else if (input.starts_with("display ") || input.starts_with("d "))
         {
-            int tasknum = -1;
+            size_t tasknum = -1;
             if (input.starts_with("display "))
             {
                 tasknum = std::stoi(input.substr(8));
