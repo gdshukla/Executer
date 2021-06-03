@@ -138,7 +138,7 @@ Implements 2 simple example commands - adder and factorial
 - adder: adds numbers starting from m_start till m_end. To simulate long running command, it add m_delay milliseconds delay between each iteration.
 - factorial: calculates factorial of m_num number. To simulate long running command, it add m_delay milliseconds delay between each iteration.
 
-## sample json file content
+## Sample json file content
 It contains two example tasks - adder & factorial
 
 ```
