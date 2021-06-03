@@ -22,9 +22,9 @@
 std::unique_ptr<Stats> Stats::m_instance;
 
 // read data from json file
-std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
+std::vector<std::shared_ptr<ICommand>> loadCommands(std::string filename)
 {
-    std::vector<std::unique_ptr<ICommand>> cmdTasks;
+    std::vector<std::shared_ptr<ICommand>> cmdTasks;
 
     using json = nlohmann::json;
     std::map<std::string, nlohmann::json> cmds;
@@ -35,7 +35,7 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
         std::cout << "Loaded " << jf["commands"].size() << " commands\n";
         for (auto& c : jf["commands"]) 
         {
-            std::unique_ptr<ICommand> cmd;
+            std::shared_ptr<ICommand> cmd;
             std::string name = c["name"];
             //std::cout << name << "\n";
             cmds[name] = c;
@@ -62,13 +62,13 @@ std::vector<std::unique_ptr<ICommand>> loadCommands(std::string filename)
     return cmdTasks;
 }
 
-std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<ICommand>> &cmdTasks)
+std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::shared_ptr<ICommand>> &cmd)
 {
     std::vector<std::shared_ptr<Task>> tasks;
-    for (auto& c : cmdTasks)
+    for (auto& c : cmd)
     {
         auto func = [&c] {
-            int result = c->operator()();
+            std::any result = c->operator()();
             //print(c->getName() + "\n");
             return result;
         };
@@ -80,9 +80,49 @@ std::vector<std::shared_ptr<Task>> makeTasks(std::vector<std::unique_ptr<IComman
     return tasks;
 }
 
-void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
+std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> makeTasksMap(std::vector<std::shared_ptr<ICommand>>& cmd)
 {
-    std::vector<std::unique_ptr<ICommand>> cmdTasks;
+    std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> cmdTasks;
+    for (auto c : cmd)
+    {
+        auto func = [c] {
+            std::any result = c->operator()();
+            //print(c->getName() + "\n");
+            return result;
+        };
+        Stats::instance()->added();
+        cmdTasks.insert(std::make_pair(make_task(func), c));
+    }
+
+    std::cout << "Added " << cmdTasks.size() << " tasks to task queue\n";
+    return cmdTasks;
+}
+
+void displayTaskDetails(const std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> &cmdTasks, int tasknum)
+{
+    int index = 0;
+    for (auto& p : cmdTasks)
+    {
+        if (index == tasknum)
+        {
+            std::string taskStatus = p.first->status() ? "Complete" : "running";
+            std::cout << "Status: " << taskStatus << "\n";
+            std::cout << "Details: " << p.second->argumentsToString() << "\n";
+            if (p.first->status())
+            {
+                std::cout << "Result: " << p.second->resultToString(p.first->m_result) << "\n";
+                std::cout << "Started at: " << toTime(p.first->start) << "\n";
+                std::cout << "Started at: " << toTime(p.first->end) << "\n";
+            }
+        }
+        index++;
+    }
+}
+
+void processCommands(std::string filename)
+{
+    std::vector<std::shared_ptr<ICommand>> cmds = loadCommands(filename);
+    std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> cmdTasks = makeTasksMap(cmds);
     while (1)
     {
         std::cout << ">>>";
@@ -119,48 +159,61 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
         }
         else if (input.starts_with("load ") || input.starts_with("l "))
         {
-            std::string filename;
+            std::string filename = "";
             if (input.starts_with("load "))
             {
-                filename = input.substr(5);
-            }
-            else
-            {
-                filename = input.substr(2);
-            }
-            cmdTasks = loadCommands(filename);
-            std::vector<std::shared_ptr<Task>> t = makeTasks(cmdTasks);
-            for (auto& c : t)
-            {
-                tasks.push_back(c);
-            }
-            //std::cout << "loaded " << cmdTasks.size() << " tasks\n";
-        }
-        else if (input.starts_with("display ") || input.starts_with("d "))
-        {
-            size_t tasknum = -1;
-            if (input.starts_with("display "))
-            {
-                tasknum = std::stoi(input.substr(8));
-            }
-            else
-            {
-                tasknum = std::stoi(input.substr(2));
-            }
-            if (tasknum < tasks.size())
-            {
-                std::cout << "Status: " << tasks[tasknum]->status() << "\n";
-                std::cout << "Result: " << tasks[tasknum]->m_result << "\n";
-                std::cout << "Started at: " << toTime(tasks[tasknum]->start) << "\n";
-                if (tasks[tasknum]->status())
+                if (input.size() > 5)
                 {
-                    std::cout << "Started at: " << toTime(tasks[tasknum]->end) << "\n";
+                    filename = input.substr(5);
                 }
             }
             else
             {
+                if (input.size() > 2)
+                {
+                    filename = input.substr(2);
+                }
+            }
+            if (filename.size() > 0)
+            {
+                std::vector<std::shared_ptr<ICommand>> tempCmds = loadCommands(filename);
+                for (auto& c : tempCmds)
+                {
+                    cmds.push_back(c);
+                }
+                std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> temp = makeTasksMap(tempCmds);
+                for (auto& c : temp)
+                {
+                    cmdTasks.insert(std::move(c));
+                }
+            }
+        }
+        else if (input.starts_with("display ") || input.starts_with("d "))
+        {
+            int tasknum = -1;
+            if (input.starts_with("display "))
+            {
+                if (input.size() > 8)
+                {
+                    tasknum = std::stoi(input.substr(8));
+                }
+            }
+            else
+            {
+                if (input.size() > 2)
+                {
+                    tasknum = std::stoi(input.substr(2));
+                }
+            }
+            if (tasknum >= 0 && tasknum < cmdTasks.size())
+            {
+                displayTaskDetails(cmdTasks, tasknum);
+
+            }
+            else
+            {
                 std::cout << "Invalid task number: " << tasknum << "\n";
-                std::cout << "Valid values are: 0 to " << tasks.size() - 1 << "\n";
+                std::cout << "Valid values are: 0 to " << cmdTasks.size() - 1 << "\n";
             }
         }
         else if (input == "quit" || input == "q")
@@ -171,19 +224,17 @@ void processCommands(std::vector<std::shared_ptr<Task>>& tasks)
     }
 }
 
+
 int main(int argc, char* argv[])
 {
     if (argc < 1) {
         std::cout << "Please specify input json file name";
     }
 
-    std::vector<std::unique_ptr<ICommand>> cmdTasks = loadCommands(argv[1]);
-
     Scheduler::init();
+    std::string filename = argv[1];
 
-    std::vector<std::shared_ptr<Task>> tasks = makeTasks(cmdTasks);
-
-    processCommands(tasks);
+    processCommands(filename);
 
 
 

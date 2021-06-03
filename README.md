@@ -10,7 +10,7 @@ Command task class must be inherited from ICommand interface.
 ```
 class my_task: public ICommand
 {
-  ...
+    ...
 }
 ```
 
@@ -28,24 +28,44 @@ It must implement `parseArgs` member to parse arguments from `commands.json` fil
 *TODO:: Add error checking in case invalid arguments are supplied*
 ```
 bool parseArgs(nlohmann::json& j) {
-  m_start = j.contains("start") ? j["start"].get<int>() : 0;
-  ...
-  return true;
+    m_start = j.contains("start") ? j["start"].get<int>() : 0;
+    ...
+    return true;
 }
 ```
 ### Command worker
-It must implement `operator()()` function which contains the actual command implementation. Currently its return type is limited to integer only.
-Before returning save result to `Task::m_result` member.
+It must implement `operator()()` function which contains the actual command implementation. It can return value of `std::any` type. 
 
-*TODO: Add support for generic return types*
 ```
 int operator()() {
-  int result = 0;
-  // command implementation
-  Task::m_result = result;
-  return result;
+    int result = 0;
+    // command implementation
+    Task::m_result = result;
+    return result;
 }
 ```
+
+### Convert worker result to std::string
+It is needed to display command task result when task status is displayed.
+```
+virtual std::string resultToString(std::any& result)
+{
+    return result.has_value() ? std::to_string(std::any_cast<int>(result)) : "result not available";
+}
+```
+### Convert task details to std::string
+It is needed to display command task details when task status is displayed.
+```
+std::string argumentsToString()
+{
+    std::string result = getName() + "(";
+    result += args[0] + "=" + std::to_string(m_num) + ", ";
+    result += args[1] + "=" + std::to_string(m_delay);
+    result += ")";
+    return result;
+}
+```
+
 ## Adding command task to program
 JSON parsing and command object initialization is done in function `loadCommands` in `Executer.cpp` file.
 Below last `else if` block, add code to load and initialize command task
@@ -115,5 +135,27 @@ Task inherits from basic_task and implements functionality to setup `std::functi
 
 ## commands.h
 Implements 2 simple example commands - adder and factorial
-- adder: adds numbers starting deom M-start till m_end. To simulate long running command, it add m_delay milliseconds delay between each iteration.
+- adder: adds numbers starting from m_start till m_end. To simulate long running command, it add m_delay milliseconds delay between each iteration.
 - factorial: calculates factorial of m_num number. To simulate long running command, it add m_delay milliseconds delay between each iteration.
+
+## sample json file content
+It contains two example tasks - adder & factorial
+
+```
+{
+  "commands": [
+    {
+      "name": "adder",
+      "start": 1,
+      "end": 20,
+      "delay": 100
+    },
+    {
+      "name": "factorial",
+      "num": 10,
+      "delay": 100
+    }
+  ]
+
+}
+```

@@ -12,6 +12,7 @@ class ICommand : public IArguments, public Task
 public:
     ICommand(std::string name) : IArguments(name)
     { }
+    virtual std::string resultToString(std::any& result) = 0;
     virtual ~ICommand() = default;
 };
 
@@ -21,20 +22,25 @@ class adder: public ICommand
     int m_start;
     int m_end;
     int m_delay;
+    std::vector<std::string> args = { 
+                                        {"start"}, 
+                                        {"end"}, 
+                                        {"delay"} 
+                                    };
 public:
     adder() :ICommand("adder"), m_start(0), m_end{ 0 }, m_delay(0)
     {}
     ~adder() = default;
     /*virtual*/ bool parseArgs(nlohmann::json& j) override
     {
-        m_start = j.contains("start") ? j["start"].get<int>() : 0;
-        m_end = j.contains("end") ? j["end"].get<int>() : 0;
-        m_delay = j.contains("delay") ? j["delay"].get<int>() : 0;
+        m_start = j.contains(args[0]) ? j[args[0]].get<int>() : 0;
+        m_end = j.contains(args[1]) ? j[args[1]].get<int>() : 0;
+        m_delay = j.contains(args[2]) ? j[args[2]].get<int>() : 0;
         return true;
     }
 
     // increment m_start by 1 and use m_delay between each iteration
-    int operator()() override
+    std::any operator()() override
     {
         int sum = 0;
         for (int i = m_start; i < m_end; i++)
@@ -46,14 +52,38 @@ public:
 
         return sum;
     }
-
+    virtual std::string resultToString(std::any& result)
+    {
+        if (m_result.has_value())
+        {
+            
+            int value = std::any_cast<int>(result);
+            return std::to_string(value);
+        }
+        return "no results";
+        //return m_result.has_value() ? std::to_string(std::any_cast<int>(m_result)) : "result not available";
+    }
+    std::string argumentsToString()
+    {
+        std::string result = getName() + "(";
+        result += args[0] + "=" + std::to_string(m_start) + ", ";
+        result += args[1] + "=" + std::to_string(m_end) + ", ";
+        result += args[2] + "=" + std::to_string(m_delay);
+        result += ")";
+        return result;
+    }
 };
 
 class factorial : public ICommand
 {
     int m_num;
     int m_delay;
-    int fact(int num)
+    long long result = 0;
+    std::vector<std::string> args = {
+                                        {"num"},
+                                        {"delay"}
+    };
+    long long fact(int num)
     {
         if (num <= 1)
         {
@@ -69,13 +99,26 @@ public:
     ~factorial() override = default;
     /*virtual*/ bool parseArgs(nlohmann::json& j) override
     {
-        m_num = j.contains("num") ? j["num"].get<int>() : 0;
-        m_delay = j.contains("delay") ? j["delay"].get<int>() : 0;
+        m_num = j.contains(args[0]) ? j[args[0]].get<int>() : 0;
+        m_delay = j.contains(args[1]) ? j[args[1]].get<int>() : 0;
         return true;
     }
-    int operator()() override
+    std::any operator()() override
     {
-        return fact(m_num);
+        result = fact(m_num);
+        return result;
+    }
+    virtual std::string resultToString(std::any& result)
+    {
+        return result.has_value() ? std::to_string(std::any_cast<long long>(result)) : "result not available";
+    }
+    std::string argumentsToString()
+    {
+        std::string result = getName() + "(";
+        result += args[0] + "=" + std::to_string(m_num) + ", ";
+        result += args[1] + "=" + std::to_string(m_delay);
+        result += ")";
+        return result;
     }
 
 };

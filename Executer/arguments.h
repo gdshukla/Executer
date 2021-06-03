@@ -14,6 +14,7 @@ public:
     {
         return m_name;
     }
+    virtual std::string argumentsToString() = 0;
     virtual ~IArguments() = default;
 };
 

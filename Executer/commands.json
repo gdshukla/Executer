@@ -15,22 +15,22 @@
       "name": "adder",
       "start": 1,
       "end": 10,
-      "delay": 500
+      "delay": 300
     },
     {
       "name": "factorial",
       "num": 8,
-      "delay": 100
+      "delay": 300
     },
     {
       "name": "adder",
       "start": 1,
       "end": 15,
-      "delay": 100
+      "delay": 500
     },
     {
       "name": "factorial",
-      "num": 12,
+      "num": 18,
       "delay": 500
     }
   ]
