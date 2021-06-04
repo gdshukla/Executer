@@ -89,6 +89,10 @@ Below last `else if` block, add code to load and initialize command task
   ```
   >>>load commands.json
   ```
+- multiload or ml: load new json file multiple times to add tasks to run
+  ```
+  >>>ml 10 commands.json
+  ```
    ![load example](/images/load.png)
 - display or d: display stats about a certain task
   ```
@@ -100,6 +104,7 @@ Below last `else if` block, add code to load and initialize command task
   ```
   ![display example](/images/display.png)
 - quit or q: quit the program
+- forcequit or fq: force quit the program. Complete currently scheduled threads and don't schedule any more
 
 # How to run the program
 Run executer.exe from terminal. Additionally json file containing command details can be passed as argument

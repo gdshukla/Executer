@@ -29,4 +29,9 @@ public:
         value = m_queue.front();
         m_queue.pop();
     }
+    bool isEmpty()
+    {
+        auto lock = std::unique_lock<std::mutex>(m_mutex);
+        return m_queue.empty();
+    }
 };

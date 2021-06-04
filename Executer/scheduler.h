@@ -17,5 +17,6 @@ public:
     static Scheduler* instance();
     static void init();
     static void shutdown();
+    void abort();
     void schedule(std::shared_ptr<Task> task);
 };

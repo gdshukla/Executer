@@ -25,6 +25,15 @@ void Scheduler::shutdown()
     }
 }
 
+void Scheduler::abort()
+{
+    while (!m_queue.isEmpty())
+    {
+        std::shared_ptr<Task> task;
+        m_queue.pop(task);
+    }
+}
+
 void Scheduler::schedule(std::shared_ptr<Task> task) 
 {
     m_queue.push(task);

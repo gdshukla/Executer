@@ -142,13 +142,17 @@ void processCommands(std::string filename)
                 "on terminal\n"
                 "In-program commands\n"
                 "- help or h: display help text\n"
-                "= stats or s: display overall task statistics\n"
+                "- stats or s: display overall task statistics\n"
                 "- load or l: load new json file to add tasks to run\n"
                 ">>>load commands.json\n"
+                "- multiload or ml: load new json file multiple times to add tasks to run\n"
+                ">>>ml 10 commands.json\n"
                 "- display or d: display stats about a certain task\n"
                 "for example to display stats of task 1\n"
                 ">>>d 1\n"
                 "- quit or q: quit the program\n"
+                "- forcequit or fq: force quit the program.\n"
+                "Complete currently scheduled threads and don't schedule any more\n"
                 "--------------------------------------------------------\n\n";
                 // print help
             std::cout << helpText;
@@ -160,19 +164,18 @@ void processCommands(std::string filename)
         else if (input.starts_with("load ") || input.starts_with("l "))
         {
             std::string filename = "";
+            size_t index = 0;
             if (input.starts_with("load "))
             {
-                if (input.size() > 5)
-                {
-                    filename = input.substr(5);
-                }
+                index = 5;
             }
             else
             {
-                if (input.size() > 2)
-                {
-                    filename = input.substr(2);
-                }
+                index = 2;
+            }
+            if (input.size() > index)
+            {
+                filename = input.substr(index);
             }
             if (filename.size() > 0)
             {
@@ -188,22 +191,45 @@ void processCommands(std::string filename)
                 }
             }
         }
+        // for testing:: load same file multiple times
+        else if (input.starts_with("multiload ") || input.starts_with("ml "))
+        {
+            std::stringstream ss(input);
+            int count = 0;
+            std::string cmd, filename = "";
+            ss >> cmd >> count >> filename;
+            if (filename.size() > 0)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    std::vector<std::shared_ptr<ICommand>> tempCmds = loadCommands(filename);
+                    for (auto& c : tempCmds)
+                    {
+                        cmds.push_back(c);
+                    }
+                    std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> temp = makeTasksMap(tempCmds);
+                    for (auto& c : temp)
+                    {
+                        cmdTasks.insert(std::move(c));
+                    }
+                }
+            }
+        }
         else if (input.starts_with("display ") || input.starts_with("d "))
         {
             int tasknum = -1;
+            size_t index = 0;
             if (input.starts_with("display "))
             {
-                if (input.size() > 8)
-                {
-                    tasknum = std::stoi(input.substr(8));
-                }
+                index = 8;
             }
             else
             {
-                if (input.size() > 2)
-                {
-                    tasknum = std::stoi(input.substr(2));
-                }
+                index = 2;
+            }
+            if (input.size() > index)
+            {
+                tasknum = std::stoi(input.substr(index));
             }
             if (tasknum >= 0 && tasknum < cmdTasks.size())
             {
@@ -218,6 +244,11 @@ void processCommands(std::string filename)
         }
         else if (input == "quit" || input == "q")
         {
+            break;
+        }
+        else if (input == "forcequit" || input == "fq")
+        {
+            Scheduler::instance()->abort();
             break;
         }
 
