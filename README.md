@@ -89,11 +89,11 @@ Below last `else if` block, add code to load and initialize command task
   ```
   >>>load commands.json
   ```
+   ![load example](/images/load.png)
 - multiload or ml: load new json file multiple times to add tasks to run
   ```
   >>>ml 10 commands.json
   ```
-   ![load example](/images/load.png)
 - display or d: display stats about a certain task
   ```
   >>>d 1
