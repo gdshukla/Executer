@@ -32,7 +32,7 @@ std::vector<std::shared_ptr<ICommand>> loadCommands(std::string filename)
     if (ifs.good())
     {
         json jf = json::parse(ifs);
-        std::cout << "Loaded " << jf["commands"].size() << " commands\n";
+        //std::cout << "Loading " << jf["commands"].size() << " commands\n";
         for (auto& c : jf["commands"]) 
         {
             std::shared_ptr<ICommand> cmd;
@@ -94,7 +94,6 @@ std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> makeTasksMap(std
         cmdTasks.insert(std::make_pair(make_task(func), c));
     }
 
-    std::cout << "Added " << cmdTasks.size() << " tasks to task queue\n";
     return cmdTasks;
 }
 
@@ -123,6 +122,8 @@ void processCommands(std::string filename)
 {
     std::vector<std::shared_ptr<ICommand>> cmds = loadCommands(filename);
     std::multimap<std::shared_ptr<Task>, std::shared_ptr<ICommand>> cmdTasks = makeTasksMap(cmds);
+    std::cout << "Added " << cmdTasks.size() << " tasks to task queue\n";
+
     while (1)
     {
         std::cout << ">>>";
@@ -177,6 +178,7 @@ void processCommands(std::string filename)
             {
                 filename = input.substr(index);
             }
+            size_t beforeCount = cmdTasks.size();
             if (filename.size() > 0)
             {
                 std::vector<std::shared_ptr<ICommand>> tempCmds = loadCommands(filename);
@@ -189,6 +191,8 @@ void processCommands(std::string filename)
                 {
                     cmdTasks.insert(std::move(c));
                 }
+                size_t afterCount = cmdTasks.size();
+                std::cout << "Added " << afterCount - beforeCount << " tasks to task queue\n";
             }
         }
         // for testing:: load same file multiple times
@@ -200,6 +204,7 @@ void processCommands(std::string filename)
             ss >> cmd >> count >> filename;
             if (filename.size() > 0)
             {
+                size_t beforeCount = cmdTasks.size();
                 for (int i = 0; i < count; i++)
                 {
                     std::vector<std::shared_ptr<ICommand>> tempCmds = loadCommands(filename);
@@ -213,6 +218,8 @@ void processCommands(std::string filename)
                         cmdTasks.insert(std::move(c));
                     }
                 }
+                size_t afterCount = cmdTasks.size();
+                std::cout << "Added " << afterCount - beforeCount << " tasks to task queue\n";
             }
         }
         else if (input.starts_with("display ") || input.starts_with("d "))
